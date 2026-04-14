@@ -69,7 +69,7 @@ const PutUpdateUser = async(req, res) =>{
                     });        
                 }
         }
-        const updatedUser = await putUserUpdateService(id, dataUpdate);
+        const updatedUser = await putUserUpdateService(id, userUpdate);
 
         if (!updatedUser) {
             return res.status(404).json({ message: 'Người dùng không tồn tại' });

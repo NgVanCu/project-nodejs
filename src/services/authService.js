@@ -17,7 +17,15 @@ const registerService = async (name, email, password, phone, address) => {
     address,
   });
   await newUser.save();
-  return { success: true };
+  return {
+    success: true,
+    data: {
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    },
+  };
 };
 
 const loginService = async (email, password) => {
@@ -29,7 +37,7 @@ const loginService = async (email, password) => {
       message: "Email hoặc mật khẩu không đúng",
     };
   }
-  const isMatch = bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     return {
       success: false,

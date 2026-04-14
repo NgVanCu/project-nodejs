@@ -102,45 +102,34 @@ const updateBook = async (req, res, next) => {
       description,
       category,
     } = req.body;
-    let resultSingImage = "";
-    let resultMultiImage = [];
-    if (req.files.thumbnail) {
+
+    const bookUpdate = { name, price, originalPrice, category, author, quantity, description };
+
+    if (req.files && req.files.thumbnail) {
       const tmp = Array.isArray(req.files.thumbnail)
         ? req.files.thumbnail[0]
         : req.files.thumbnail;
       const singImage = await uploadSingleFile(tmp, "book");
-      if (result.status === "success") {
-        resultSingImage = singImage.path;
+      if (singImage.status === "success") {
+        bookUpdate.thumbnail = singImage.path;
       }
     }
-    if (req.files.slider) {
-      let resFile = req.files.slider;
-      if (!Array.isArray(slierFile)) {
-        slierFile = [slierFile];
+
+    if (req.files && req.files.slider) {
+      let sliderFiles = req.files.slider;
+      if (!Array.isArray(sliderFiles)) {
+        sliderFiles = [sliderFiles];
       }
-      let result = await uploadMultiFile(slierFile, "book");
+      const result = await uploadMultiFile(sliderFiles, "book");
       if (result && result.detail) {
-        let tmp = result.detail;
-        for (let i = 0; i < tmp.length; ++i) {
-          resultMultiImage.push(tmp[i].path);
-        }
+        bookUpdate.slider = result.detail.map((f) => f.path);
       }
     }
-    const bookUpdate = {
-      name,
-      price,
-      originalPrice,
-      category,
-      thumbnail: resultSingImage,
-      slider: resultMultiImage,
-      author,
-      quantity,
-      description,
-    };
+
     const tmp = await bookService.updateBookService(id, bookUpdate);
     return res.status(200).json({
       success: true,
-      message: "update thành công",
+      message: "Cập nhật sách thành công",
       data: tmp,
     });
   } catch (err) {

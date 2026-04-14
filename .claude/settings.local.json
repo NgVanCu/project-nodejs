@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls D:/nam3_ky2/CNPM/project-nodejs/*.env)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"require\\('./src/routes/api.js'\\)\")"
+    ]
+  }
+}
