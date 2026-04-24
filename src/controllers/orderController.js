@@ -2,7 +2,7 @@ const { createOrderService, getAllOrdersService, getMyOrdersService, updateOrder
 
 const createOrderController = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id || req.user._id;
         const { shippingAddress } = req.body;
         const result = await createOrderService(userId, shippingAddress);
         return res.status(200).json({
@@ -26,7 +26,7 @@ const getAllOrdersController = async (req, res) => {
 }
 const getMyOrdersController = async(req, res) =>{
     try{
-        const orders = await getMyOrdersService(req.user._id);
+        const orders = await getMyOrdersService(req.user.id || req.user._id);
         return res.status(200).json({
             message: 'Lấy lịch sử đơn hàng thành công',
             data: orders

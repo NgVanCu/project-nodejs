@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls D:/nam3_ky2/CNPM/project-nodejs/*.env)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"require\\('./src/routes/api.js'\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:8080/api/book?limit=1)",
+      "Bash(curl -s http://localhost:5173/api/book?limit=1)",
+      "Bash(curl -s http://localhost:8080/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"123456\"}')"
+    ]
+  }
+}

@@ -3,7 +3,7 @@ const {addToCartService,getMyCartService,removeCartItemService} = require('../se
 const addToCartController = async(req, res) =>{
     try{
         const {bookId, quantity} = req.body;
-        const userId = req.user._id;
+        const userId = req.user.id || req.user._id;
         const result = await addToCartService(userId, bookId, quantity);
         return res.status(201).json({
             message: 'Thêm giỏ hàng thành công',
@@ -15,7 +15,7 @@ const addToCartController = async(req, res) =>{
 }
 const getMyCartController = async(req, res) =>{
     try{
-        const userId = req.user._id;
+        const userId = req.user.id || req.user._id;
         const result = await getMyCartService(userId);
         if (!result) {
             return res.status(200).json({
@@ -33,7 +33,7 @@ const getMyCartController = async(req, res) =>{
 }
 const removeCartItemController = async(req, res) =>{
     try{
-        const userId = req.user._id;
+        const userId = req.user.id || req.user._id;
         const {bookId} = req.query;
         const result = await removeCartItemService(userId, bookId);
         return res.status(200).json({

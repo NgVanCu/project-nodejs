@@ -52,4 +52,4 @@ const restoreUserService = async(id) =>{
         throw error;
     }
 }
-module.exports = {getAllUsersService,getUserServiceById, putUserUpdateService,deleteUserService};
+module.exports = {getAllUsersService, getUserServiceById, putUserUpdateService, deleteUserService, restoreUserService};

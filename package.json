@@ -5,7 +5,7 @@
   "keywords": [
     "project",
     "nodejs",
-    "mogodb",
+    "mongodb",
     "react"
   ],
   "homepage": "https://github.com/NgVanCu/project-nodejs-react-mogodb#readme",
@@ -19,11 +19,11 @@
   "license": "ISC",
   "author": "CwrNguyen",
   "type": "commonjs",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon ./src/app.js"
+    "start": "C:\\Progra~1\\nodejs\\node.exe ./src/app.js",
+    "dev": "C:\\Progra~1\\nodejs\\node.exe ./node_modules/nodemon/bin/nodemon.js ./src/app.js"
   },
   "dependencies": {
     "api-query-params": "6.1.0",

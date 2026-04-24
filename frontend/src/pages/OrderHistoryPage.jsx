@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Package, ChevronRight, Clock, Truck, CheckCircle, XCircle, Search } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { formatPrice } from '../components/BookCard';
+import { api, normalizeOrder } from '../services/api';
+
+const STATUS_MAP = {
+  pending:   { label: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-700', icon: <Clock size={14} /> },
+  confirmed: { label: 'Đã xác nhận',  color: 'bg-blue-100 text-blue-700',   icon: <Package size={14} /> },
+  shipping:  { label: 'Đang giao',    color: 'bg-purple-100 text-purple-700', icon: <Truck size={14} /> },
+  delivered: { label: 'Đã thanh toán', color: 'bg-green-100 text-green-700',  icon: <CheckCircle size={14} /> },
+  cancelled: { label: 'Đã hủy',       color: 'bg-red-100 text-red-700',     icon: <XCircle size={14} /> },
+};
+
+export default function OrderHistoryPage() {
+  const { user } = useAuth();
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchOrders = async () => {
+      try {
+        const res = await api.get('/order/my');
+        setOrders((res.data || []).map(normalizeOrder));
+      } catch (e) {
+        console.error('Lỗi tải đơn hàng:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-xl font-bold text-gray-600 mb-4">Vui lòng đăng nhập</h2>
+        <Link to="/login" className="btn-primary">Đăng nhập</Link>
+      </div>
+    );
+  }
+
+  const filtered = orders.filter(o => {
+    if (filter !== 'all' && o.status !== filter) return false;
+    if (search && !o.id.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <Link to="/" className="hover:text-orange-500">Trang chủ</Link>
+        <ChevronRight size={14} />
+        <span className="text-gray-700">Đơn hàng của tôi</span>
+      </nav>
+
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Đơn hàng của tôi</h1>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex gap-2 overflow-x-auto">
+          {[
+            { id: 'all', label: 'Tất cả' },
+            { id: 'pending', label: 'Chờ xác nhận' },
+            { id: 'delivered', label: 'Đã thanh toán' },
+            { id: 'cancelled', label: 'Đã hủy' },
+          ].map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${filter === f.id ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:ml-auto">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Tìm mã đơn hàng..."
+            className="input-field pl-9 w-48 text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Orders */}
+      {loading ? (
+        <div className="text-center py-16 text-gray-400">Đang tải...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <Package size={64} className="text-gray-200 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-500 mb-2">Không có đơn hàng nào</h3>
+          <Link to="/shop" className="btn-primary inline-block mt-3">Mua hàng ngay</Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map(order => {
+            const status = STATUS_MAP[order.status] || STATUS_MAP.pending;
+            return (
+              <div key={order.id} className="card p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-gray-800">#{order.id.slice(-8).toUpperCase()}</span>
+                      <span className={`badge flex items-center gap-1 ${status.color}`}>
+                        {status.icon} {status.label}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">Ngày đặt: {order.date} · {order.items.length} sản phẩm</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-orange-500">{formatPrice(order.total)}</div>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div className="space-y-2 mb-3">
+                  {order.items.slice(0, 2).map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm text-gray-600">
+                      <Package size={14} className="text-gray-300 flex-shrink-0" />
+                      <span className="truncate">{item.title}</span>
+                      <span className="text-gray-400 flex-shrink-0">×{item.quantity}</span>
+                      <span className="text-orange-500 flex-shrink-0 ml-auto">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                  {order.items.length > 2 && (
+                    <div className="text-xs text-gray-400">... và {order.items.length - 2} sản phẩm khác</div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="text-xs text-gray-400 flex items-center gap-1">
+                    <ChevronRight size={12} /> {order.address}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
