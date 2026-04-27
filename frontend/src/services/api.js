@@ -86,15 +86,19 @@ export function normalizeBook(book) {
 
 // Map backend status → frontend status key
 const STATUS_FROM_BACKEND = {
-  'Chưa thanh toán': 'pending',
-  'Đã thanh toán': 'delivered',
-  'Đã hủy': 'cancelled',
+  'Chờ xác nhận': 'pending',
+  'Đang đóng gói': 'packing',
+  'Đang giao':     'shipping',
+  'Hoàn thành':    'completed',
+  'Đã hủy':        'cancelled',
 };
 
 // Map frontend status key → backend status string
 export const STATUS_TO_BACKEND = {
-  pending: 'Chưa thanh toán',
-  delivered: 'Đã thanh toán',
+  pending:   'Chờ xác nhận',
+  packing:   'Đang đóng gói',
+  shipping:  'Đang giao',
+  completed: 'Hoàn thành',
   cancelled: 'Đã hủy',
 };
 

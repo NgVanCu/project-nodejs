@@ -164,6 +164,20 @@ const restoreBook = async (req, res, next) => {
     next(err);
   }
 };
+const addReview = async (req, res, next) => {
+  try {
+    const bookId = req.params.id;
+    const userId = req.user.id || req.user._id;
+    const userName = req.user.name;
+    const { rating, comment } = req.body;
+    if (!rating) return res.status(400).json({ message: 'Vui lòng chọn số sao' });
+    const result = await bookService.addReviewService(bookId, userId, userName, rating, comment);
+    res.status(200).json({ success: true, message: 'Đánh giá thành công', data: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createBook,
   getAllBooks,
@@ -171,4 +185,5 @@ module.exports = {
   updateBook,
   deleteBook,
   restoreBook,
+  addReview,
 };

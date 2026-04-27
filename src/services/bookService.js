@@ -1,4 +1,5 @@
 const Book = require("../models/bookModel");
+const Order = require("../models/orderModel");
 
 const createBookService = async (data) => {
   const newBook = new Book(data);
@@ -73,6 +74,29 @@ const restoreBookService = async (id) => {
   return result;
 };
 
+const addReviewService = async (bookId, userId, userName, rating, comment) => {
+  const book = await Book.findById(bookId);
+  if (!book) throw new Error('Sách không tồn tại');
+
+  // Chỉ cho review khi có đơn hàng Hoàn thành chứa sách này
+  const completedOrder = await Order.findOne({
+    user: userId,
+    status: 'Hoàn thành',
+    'orderItems.product': bookId,
+  });
+  if (!completedOrder) throw new Error('Bạn chỉ có thể đánh giá sách đã mua và đơn hàng đã hoàn thành');
+
+  // Mỗi user chỉ review 1 lần
+  const alreadyReviewed = book.reviews.find(r => r.user.toString() === userId.toString());
+  if (alreadyReviewed) throw new Error('Bạn đã đánh giá sách này rồi');
+
+  book.reviews.push({ user: userId, name: userName, rating: Number(rating), comment: comment || '' });
+  book.numReviews = book.reviews.length;
+  book.rating = book.reviews.reduce((sum, r) => sum + r.rating, 0) / book.reviews.length;
+  await book.save();
+  return book;
+};
+
 module.exports = {
   createBookService,
   getAllBooksService,
@@ -80,4 +104,5 @@ module.exports = {
   updateBookService,
   deleteBookService,
   restoreBookService,
+  addReviewService,
 };

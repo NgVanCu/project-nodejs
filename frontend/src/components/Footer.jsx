@@ -62,15 +62,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                <span>123 Nguyễn Huệ, Q.1, TP. Hồ Chí Minh</span>
+                <span>Học Viện công nghệ bưu chính viễn thông</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={16} className="text-orange-400 flex-shrink-0" />
-                <span>1800 6789 (Miễn phí)</span>
+                <span>12345678 (Miễn phí)</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={16} className="text-orange-400 flex-shrink-0" />
-                <span>support@bookstore.vn</span>
+                <span>ptit@bookstore.vn</span>
               </li>
             </ul>
             <div className="mt-4">

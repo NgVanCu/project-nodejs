@@ -20,46 +20,6 @@ const register = async (req, res) => {
     if (!result.success) {
       return res.status(result.status).json({ message: result.message });
     }
-
-    // let imageUrl = "";
-    // if (!req.files || Object.keys(req.files).length === 0) {
-    //   return res.status(400).send("Vui lòng upload ảnh đại diện.");
-    // }
-
-    // let fileImage = req.files.image;
-    // if (Array.isArray(fileImage)) {
-    //   fileImage = fileImage[0];
-    // }
-
-    // let result = await uploadSingleFile(fileImage, "user");
-
-    // if (result.status === "success") {
-    //   imageUrl = result.path;
-    // } else {
-    //   return res.status(500).json({
-    //     message: "Upload ảnh thất bại: " + result.error,
-    //   });
-    // }
-    // const userData = {
-    //   name,
-    //   email,
-    //   password: hashPassword,
-    //   phone,
-    //   address,
-    //   image: imageUrl,
-    // };
-
-    // const newUser = await createUserService(userData);
-    // return res.status(201).json({
-    //   message: "Đăng ký thành công",
-    //   user: {
-    //     _id: newUser._id,
-    //     name: newUser.name,
-    //     email: newUser.email,
-    //     image: newUser.image,
-    //     address: newUser.address,
-    //   },
-    // });
     res.status(201).json({
       message: "Đăng ký thành công",
       data: result.data,
@@ -68,6 +28,7 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Loi he thong" });
   }
 };
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -87,24 +48,5 @@ const login = async (req, res) => {
     res.status(500).json({ message: "Lỗi Server" + error.message });
   }
 };
-// const uploadFile = async(req,res) =>{
-//     if (!req.files || Object.keys(req.files).length === 0) {
-//         return res.status(400).send('No files were uploaded.');
-//     }
-//     try{
-//         let result;
-//         if(Array.isArray(req.files.image)){
-//             result = await uploadMultiFile(req.files.image);
-//         }else{
-//             result = await uploadSingleFile(req.files.image);
-//         }
-//         return res.status(200).json({
-//             message: "Upload successful!",
-//             data: result
-//         });
-//     }catch(error){
-//         console.error("DEBUG LỖI TẠI ĐÂY:", error);
-//         res.status(500).json({message: 'Lỗi Server!'});
-//     }
-// }
+
 module.exports = { register, login };

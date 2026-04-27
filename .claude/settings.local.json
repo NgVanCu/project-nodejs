@@ -10,7 +10,10 @@
       "Bash(curl -s http://localhost:5173)",
       "Bash(curl -s http://localhost:8080/api/book?limit=1)",
       "Bash(curl -s http://localhost:5173/api/book?limit=1)",
-      "Bash(curl -s http://localhost:8080/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"123456\"}')"
+      "Bash(curl -s http://localhost:8080/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"123456\"}')",
+      "Bash(python -c \"import docx; print\\('python-docx ok'\\)\")",
+      "Bash(pip install:*)",
+      "Bash(python gen_docx.py)"
     ]
   }
 }

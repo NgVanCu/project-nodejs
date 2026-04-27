@@ -7,12 +7,16 @@ import { api, normalizeBook, normalizeOrder, STATUS_TO_BACKEND } from '../servic
 
 const STATUS_COLORS = {
   pending:   'bg-yellow-100 text-yellow-700',
-  delivered: 'bg-green-100 text-green-700',
+  packing:   'bg-blue-100 text-blue-700',
+  shipping:  'bg-purple-100 text-purple-700',
+  completed: 'bg-green-100 text-green-700',
   cancelled: 'bg-red-100 text-red-700',
 };
 const STATUS_LABELS = {
-  pending: 'Chưa thanh toán',
-  delivered: 'Đã thanh toán',
+  pending:   'Chờ xác nhận',
+  packing:   'Đang đóng gói',
+  shipping:  'Đang giao',
+  completed: 'Hoàn thành',
   cancelled: 'Đã hủy',
 };
 
@@ -164,7 +168,7 @@ export default function AdminPage() {
   };
 
   const totalRevenue = orders
-    .filter(o => o.status === 'delivered')
+    .filter(o => o.status === 'completed')
     .reduce((sum, o) => sum + o.total, 0);
 
   const TABS = [
@@ -463,22 +467,56 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          {order.status === 'pending' && (
-                            <div className="flex gap-1">
-                              <button
-                                onClick={() => handleUpdateOrderStatus(order.id, 'delivered')}
-                                className="text-xs text-green-600 border border-green-200 rounded px-2 py-1 hover:bg-green-50"
-                              >
-                                Thanh toán
-                              </button>
-                              <button
-                                onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
-                                className="text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
-                              >
-                                Hủy
-                              </button>
-                            </div>
-                          )}
+                          <div className="flex gap-1 flex-wrap">
+                            {order.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'packing')}
+                                  className="text-xs text-blue-600 border border-blue-200 rounded px-2 py-1 hover:bg-blue-50"
+                                >
+                                  Xác nhận
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                                  className="text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+                                >
+                                  Hủy
+                                </button>
+                              </>
+                            )}
+                            {order.status === 'packing' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'shipping')}
+                                  className="text-xs text-purple-600 border border-purple-200 rounded px-2 py-1 hover:bg-purple-50"
+                                >
+                                  Giao hàng
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                                  className="text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+                                >
+                                  Hủy đơn
+                                </button>
+                              </>
+                            )}
+                            {order.status === 'shipping' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                                  className="text-xs text-green-600 border border-green-200 rounded px-2 py-1 hover:bg-green-50"
+                                >
+                                  Hoàn thành
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                                  className="text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+                                >
+                                  Hoàn hàng
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

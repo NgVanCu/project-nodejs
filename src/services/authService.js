@@ -58,6 +58,8 @@ const loginService = async (email, password) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        address: user.address,
         role: user.role,
       },
     },

@@ -83,7 +83,12 @@ export default function ShopPage() {
   useEffect(() => { fetchBooks(); }, [fetchBooks]);
 
   // Reset page khi filter thay đổi
-  useEffect(() => { setPage(1); }, [searchQuery, selectedCategoryName, priceRange, sort]);
+  useEffect(() => {
+    setSelectedCategoryName(searchParams.get('categoryName') || '');
+    setSort(searchParams.get('sort') || '-createdAt');
+    setPriceRange(0);
+    setPage(1);
+  }, [searchParams]);
 
   const clearFilters = () => {
     setSelectedCategoryName('');

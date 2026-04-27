@@ -1,6 +1,6 @@
-const cartModel = require('../models/cartModel');
+const cartModel  = require('../models/cartModel');
 const orderModel = require('../models/orderModel');
-const bookModel = require('../models/bookModel');
+const bookModel  = require('../models/bookModel');
 
 const createOrderService = async(userId, shippingAddress) =>{
     try{
@@ -65,11 +65,26 @@ const getMyOrdersService = async (userId) => {
         throw error;
     }
 }
-const updateOrderStatusService = async(orderId,status) =>{
-    try{
-        const result = await orderModel.findByIdAndUpdate(orderId,{status:status},{new:true});
-        return result;
-    }catch(error){
+const updateOrderStatusService = async (orderId, status) => {
+    try {
+        const order = await orderModel.findById(orderId);
+        if (!order) throw new Error('Đơn hàng không tồn tại');
+
+        // Khi hủy/hoàn hàng: cộng lại tồn kho và trừ số đã bán
+        // Chỉ hoàn kho nếu đơn chưa ở trạng thái Đã hủy trước đó
+        if (status === 'Đã hủy' && order.status !== 'Đã hủy') {
+            for (const item of order.orderItems) {
+                await bookModel.findByIdAndUpdate(
+                    item.product,
+                    { $inc: { quantity: item.qty, sold: -item.qty } }
+                );
+            }
+        }
+
+        order.status = status;
+        await order.save();
+        return order;
+    } catch (error) {
         throw error;
     }
 }

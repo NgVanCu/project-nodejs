@@ -32,9 +32,9 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: 'Chưa thanh toán',
-        enum: ['Chưa thanh toán', 'Đã thanh toán', 'Đã hủy'] 
-    }  
+        default: 'Chờ xác nhận',
+        enum: ['Chờ xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành', 'Đã hủy']
+    }
 }, { 
     timestamps: true 
 });
