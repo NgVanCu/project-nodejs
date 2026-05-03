@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const registerService = async (name, email, password, phone, address) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return { success: false, status: 400, message: "Email này đã tồn tại" };
+    return { success: false, status: 400, message: "Email này đã tồn tại" };
   }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -29,12 +29,19 @@ const registerService = async (name, email, password, phone, address) => {
 };
 
 const loginService = async (email, password) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOneWithDeleted({ email });
   if (!user) {
     return {
       success: false,
       status: 400,
-      message: "Email hoặc mật khẩu không đúng",
+      message: "Email hoặc mật khẩu không đúng",
+    };
+  }
+  if (user.deleted) {
+    return {
+      success: false,
+      status: 403,
+      message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.",
     };
   }
   const isMatch = await bcrypt.compare(password, user.password);
@@ -42,7 +49,7 @@ const loginService = async (email, password) => {
     return {
       success: false,
       status: 404,
-      message: "Email hoặc mật khẩu không đúng",
+      message: "Email hoặc mật khẩu không đúng",
     };
   }
   const token = jwt.sign(

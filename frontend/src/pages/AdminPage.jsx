@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BarChart2, Users, ShoppingCart, TrendingUp, Plus, Edit, Trash2, Search, BookOpen, DollarSign, LogOut, LayoutDashboard, Star, MessageSquare } from 'lucide-react';
+import { BarChart2, Users, ShoppingCart, TrendingUp, Plus, Edit, Trash2, Search, BookOpen, DollarSign, LogOut, LayoutDashboard, Star, MessageSquare, Lock, Unlock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatPrice, StarRating } from '../components/BookCard';
 import { api, normalizeBook, normalizeOrder, STATUS_TO_BACKEND } from '../services/api';
@@ -58,7 +58,7 @@ export default function AdminPage() {
         setOrders((res.data || []).map(normalizeOrder));
       }).catch(() => {});
     }
-    if (activeTab === 'customers') {
+    if (activeTab === 'customers' || activeTab === 'dashboard') {
       api.get('/user').then(res => {
         setUsers(res.data?.results || []);
       }).catch(() => {});
@@ -167,6 +167,26 @@ export default function AdminPage() {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
     } catch (e) {
       alert('Lỗi cập nhật trạng thái: ' + e.message);
+    }
+  };
+
+  const handleBanUser = async (id) => {
+    if (!window.confirm('Xác nhận khóa tài khoản này?')) return;
+    try {
+      await api.delete(`/user/${id}`);
+      setUsers(prev => prev.map(u => u._id === id ? { ...u, deleted: true } : u));
+    } catch (e) {
+      alert('Lỗi khóa tài khoản: ' + e.message);
+    }
+  };
+
+  const handleUnbanUser = async (id) => {
+    if (!window.confirm('Xác nhận mở khóa tài khoản này?')) return;
+    try {
+      await api.put(`/user/${id}/restore`);
+      setUsers(prev => prev.map(u => u._id === id ? { ...u, deleted: false } : u));
+    } catch (e) {
+      alert('Lỗi mở khóa tài khoản: ' + e.message);
     }
   };
 
@@ -646,25 +666,32 @@ export default function AdminPage() {
           {/* Customers */}
           {activeTab === 'customers' && (
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Quản lý khách hàng ({users.length})</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                Quản lý khách hàng ({users.length})
+                {users.filter(u => u.deleted).length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-red-500">
+                    ({users.filter(u => u.deleted).length} đang bị khóa)
+                  </span>
+                )}
+              </h2>
               <div className="card overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['Tên', 'Email', 'Số điện thoại', 'Vai trò'].map(h => (
+                      {['Tên', 'Email', 'Số điện thoại', 'Vai trò', 'Trạng thái', 'Hành động'].map(h => (
                         <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {users.map(u => (
-                      <tr key={u._id} className="hover:bg-gray-50">
+                      <tr key={u._id} className={`hover:bg-gray-50 ${u.deleted ? 'bg-red-50/40' : ''}`}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-sm">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${u.deleted ? 'bg-gray-200 text-gray-400' : 'bg-orange-100 text-orange-600'}`}>
                               {u.name?.charAt(0)?.toUpperCase()}
                             </div>
-                            <span className="font-medium text-gray-800">{u.name}</span>
+                            <span className={`font-medium ${u.deleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{u.name}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">{u.email}</td>
@@ -674,11 +701,43 @@ export default function AdminPage() {
                             {u.role === 'admin' ? 'Admin' : 'User'}
                           </span>
                         </td>
+                        <td className="px-4 py-3">
+                          {u.deleted ? (
+                            <span className="badge bg-red-100 text-red-600 flex items-center gap-1 w-fit">
+                              <Lock size={11} /> Đã khóa
+                            </span>
+                          ) : (
+                            <span className="badge bg-green-100 text-green-600 flex items-center gap-1 w-fit">
+                              <Unlock size={11} /> Hoạt động
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {u.role !== 'admin' && (
+                            u.deleted ? (
+                              <button
+                                onClick={() => handleUnbanUser(u._id)}
+                                className="flex items-center gap-1 text-xs text-green-600 border border-green-200 rounded px-2 py-1 hover:bg-green-50"
+                                title="Mở khóa tài khoản"
+                              >
+                                <Unlock size={13} /> Mở khóa
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleBanUser(u._id)}
+                                className="flex items-center gap-1 text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50"
+                                title="Khóa tài khoản"
+                              >
+                                <Lock size={13} /> Khóa
+                              </button>
+                            )
+                          )}
+                        </td>
                       </tr>
                     ))}
                     {users.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-gray-400">Chưa có khách hàng</td>
+                        <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Chưa có khách hàng</td>
                       </tr>
                     )}
                   </tbody>

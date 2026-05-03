@@ -1,4 +1,4 @@
-const {getAllUsersService, getUserServiceById,putUserUpdateService,deleteUserService} = require('../services/userService')
+const {getAllUsersService, getUserServiceById,putUserUpdateService,deleteUserService,restoreUserService} = require('../services/userService')
 const {uploadSingleFile} = require('../services/fileService')
 const bcrypt = require('bcryptjs')
 const getAllUserController = async(req,res)=>{
@@ -110,4 +110,25 @@ const deleteUser = async(req,res) =>{
         });
     }
 }
-module.exports = {getAllUserController, getUserById,PutUpdateUser,deleteUser};
+const restoreUser = async(req, res) => {
+    try{
+        const userId = req.params.id;
+        if(!userId){
+            return res.status(400).json({message: 'Hãy truyền Id'})
+        }
+        const result = await restoreUserService(userId);
+        if(result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại hoặc chưa bị khóa' })
+        }
+        return res.status(200).json({
+            message: 'Mở khóa tài khoản thành công',
+            data: result
+        })
+    }catch(error){
+        return res.status(500).json({
+            message: 'Lỗi Server' + error.message
+        });
+    }
+}
+
+module.exports = {getAllUserController, getUserById, PutUpdateUser, deleteUser, restoreUser};

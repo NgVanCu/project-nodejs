@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, BookOpen, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = new URLSearchParams(location.search).get('redirect');
 
   const setField = (field, value) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -26,7 +28,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await login(form.email, form.password);
-      if (result.success) navigate(result.user.role === 'admin' ? '/admin' : '/');
+      if (result.success) navigate(redirectTo || (result.user.role === 'admin' ? '/admin' : '/'));
     } catch (e) {
       setErrors({ general: e.message });
     } finally {

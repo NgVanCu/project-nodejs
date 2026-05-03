@@ -1,6 +1,7 @@
 const Book  = require("../models/bookModel");
 const Order = require("../models/orderModel");
 const User  = require("../models/userModel");
+const { filterBadWords } = require("../utils/badWordsFilter");
 
 const createBookService = async (data) => {
   const newBook = new Book(data);
@@ -98,7 +99,8 @@ const addReviewService = async (bookId, userId, userName, rating, comment) => {
   const alreadyReviewed = book.reviews.find(r => r.user.toString() === userId.toString());
   if (alreadyReviewed) throw new Error('Bạn đã đánh giá sách này rồi');
 
-  book.reviews.push({ user: userId, name: userName, rating: Number(rating), comment: comment || '' });
+  const { filtered: filteredComment } = filterBadWords(comment || '');
+  book.reviews.push({ user: userId, name: userName, rating: Number(rating), comment: filteredComment });
   book.numReviews = book.reviews.length;
   book.rating = book.reviews.reduce((sum, r) => sum + r.rating, 0) / book.reviews.length;
   await book.save();

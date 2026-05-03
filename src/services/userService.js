@@ -5,10 +5,11 @@ const getAllUsersService = async(queryString) =>{
         const page = parseInt(queryString.page) || 1;
         const limit = parseInt(queryString.limit) || 10;
         const skip = (page - 1) * limit;
-        const result = await userModel.find().select('-password')
+        // findWithDeleted để admin thấy cả tài khoản bị khóa
+        const result = await userModel.findWithDeleted().select('-password')
             .skip(skip)
             .limit(limit);
-        const totalItems = await userModel.countDocuments();
+        const totalItems = await userModel.countDocumentsWithDeleted();
         return {
             results: result,
             totalItems,

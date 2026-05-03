@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { api, normalizeCartItems } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -44,6 +44,7 @@ function cartReducer(state, action) {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const { user } = useAuth();
+  const prevUserRef = useRef(null);
 
   // Load giỏ hàng từ server khi user đăng nhập
   const fetchCart = useCallback(async () => {
@@ -57,7 +58,37 @@ export function CartProvider({ children }) {
     }
   }, [user]);
 
-  useEffect(() => { fetchCart(); }, [fetchCart]);
+  useEffect(() => {
+    if (!user) {
+      prevUserRef.current = null;
+      dispatch({ type: 'CLEAR_CART' });
+      return;
+    }
+
+    const justLoggedIn = prevUserRef.current === null;
+    prevUserRef.current = user;
+
+    const raw = justLoggedIn ? localStorage.getItem('guest_cart') : null;
+    if (!raw) {
+      fetchCart();
+      return;
+    }
+
+    // Merge giỏ hàng guest vào DB rồi mới fetch
+    (async () => {
+      try {
+        const guestItems = JSON.parse(raw);
+        for (const item of guestItems) {
+          try {
+            await api.post('/cart', { bookId: item.id, quantity: item.quantity });
+          } catch { /* bỏ qua item lỗi (hết hàng, đã xóa...) */ }
+        }
+      } catch { /* ignore */ } finally {
+        localStorage.removeItem('guest_cart');
+      }
+      await fetchCart();
+    })();
+  }, [fetchCart]);
 
   const addItem = async (item, quantity = 1) => {
     if (user) {

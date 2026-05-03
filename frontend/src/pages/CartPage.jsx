@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, Tag, ChevronRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Tag, ChevronRight, LogIn } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { formatPrice } from '../components/BookCard';
 
 const VOUCHERS = {
@@ -12,6 +13,7 @@ const VOUCHERS = {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [voucherCode, setVoucherCode] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState(null);
@@ -179,11 +181,23 @@ export default function CartPage() {
                 <span className="text-orange-500 text-lg">{formatPrice(finalTotal)}</span>
               </div>
             </div>
+            {!user && (
+              <p className="text-xs text-gray-400 text-center mt-3 -mb-1">
+                Bạn cần đăng nhập để tiếp tục thanh toán
+              </p>
+            )}
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={() => {
+                if (!user) {
+                  localStorage.setItem('guest_cart', JSON.stringify(items));
+                  navigate('/login?redirect=/checkout');
+                } else {
+                  navigate('/checkout');
+                }
+              }}
               className="btn-primary w-full py-3 mt-4 text-base flex items-center justify-center gap-2"
             >
-              Thanh toán ngay →
+              {user ? 'Thanh toán ngay →' : <><LogIn size={18} /> Đăng nhập để thanh toán</>}
             </button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-const { createOrderService, getAllOrdersService, getMyOrdersService, updateOrderStatusService } = require('../services/orderService');
+const { createOrderService, getAllOrdersService, getMyOrdersService, updateOrderStatusService, cancelOrderByUserService } = require('../services/orderService');
 
 const createOrderController = async (req, res) => {
     try {
@@ -48,4 +48,18 @@ const updateOrderStatusController = async(req, res) =>{
         return res.status(500).json({ message: 'Lỗi Server: ' + error.message });
     }
 }
-module.exports = { createOrderController, getAllOrdersController,getMyOrdersController,updateOrderStatusController};
+const cancelOrderByUserController = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const userId = req.user.id || req.user._id;
+        const result = await cancelOrderByUserService(orderId, userId);
+        return res.status(200).json({
+            message: 'Hủy đơn hàng thành công',
+            data: result
+        });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
+
+module.exports = { createOrderController, getAllOrdersController, getMyOrdersController, updateOrderStatusController, cancelOrderByUserController };

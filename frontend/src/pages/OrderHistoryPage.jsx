@@ -49,6 +49,7 @@ export default function OrderHistoryPage() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewedBooks, setReviewedBooks] = useState(new Set());
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -79,6 +80,19 @@ export default function OrderHistoryPage() {
     if (search && !o.id.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Xác nhận hủy đơn hàng này?')) return;
+    setCancellingId(orderId);
+    try {
+      await api.put(`/order/${orderId}/cancel`);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled', statusLabel: 'Đã hủy' } : o));
+    } catch (e) {
+      alert('Lỗi hủy đơn: ' + e.message);
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const openReview = (bookId, bookTitle, orderId) => {
     setReviewModal({ bookId, bookTitle, orderId });
@@ -173,7 +187,18 @@ export default function OrderHistoryPage() {
                       Ngày đặt: {order.date} · {order.items.length} sản phẩm
                     </div>
                   </div>
-                  <div className="font-bold text-orange-500">{formatPrice(order.total)}</div>
+                  <div className="flex items-center gap-3">
+                    {(order.status === 'pending' || order.status === 'packing') && (
+                      <button
+                        onClick={() => handleCancelOrder(order.id)}
+                        disabled={cancellingId === order.id}
+                        className="text-xs text-red-500 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                      >
+                        {cancellingId === order.id ? 'Đang hủy...' : 'Hủy đơn'}
+                      </button>
+                    )}
+                    <div className="font-bold text-orange-500">{formatPrice(order.total)}</div>
+                  </div>
                 </div>
 
                 {/* Items */}
