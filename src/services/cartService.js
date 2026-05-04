@@ -20,7 +20,7 @@ const addToCartService = async(userId, bookId, quantity) =>{
         if(itemIndex > -1){
             cart.cartItems[itemIndex].qty += quantity;
         }else{
-            cart.items.push({ product: bookId, qty: quantity });
+            cart.cartItems.push({ product: bookId, qty: quantity });
         }
         await cart.save();
         return cart;

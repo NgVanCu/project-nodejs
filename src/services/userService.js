@@ -5,10 +5,11 @@ const getAllUsersService = async(queryString) =>{
         const page = parseInt(queryString.page) || 1;
         const limit = parseInt(queryString.limit) || 10;
         const skip = (page - 1) * limit;
-        const result = await userModel.find().select('-password')
+        // findWithDeleted để admin thấy cả tài khoản bị khóa
+        const result = await userModel.findWithDeleted().select('-password')
             .skip(skip)
             .limit(limit);
-        const totalItems = await userModel.countDocuments();
+        const totalItems = await userModel.countDocumentsWithDeleted();
         return {
             results: result,
             totalItems,
@@ -30,6 +31,14 @@ const getUserServiceById = async(userId) =>{
 }
 const putUserUpdateService = async(userId, dataUpdate) => {
     try{
+        if (dataUpdate.phone) {
+            const existing = await userModel.findOne({ phone: dataUpdate.phone, _id: { $ne: userId } });
+            if (existing) {
+                const err = new Error('Số điện thoại đã được sử dụng');
+                err.status = 400;
+                throw err;
+            }
+        }
         const user = await userModel.findByIdAndUpdate(userId, dataUpdate, { new: true });
         return user;
     }catch(error){
@@ -52,4 +61,4 @@ const restoreUserService = async(id) =>{
         throw error;
     }
 }
-module.exports = {getAllUsersService,getUserServiceById, putUserUpdateService,deleteUserService};
+module.exports = {getAllUsersService, getUserServiceById, putUserUpdateService, deleteUserService, restoreUserService};

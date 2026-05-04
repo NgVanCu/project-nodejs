@@ -1,3 +1,6 @@
 node_modules
 .env
-.public
+public
+.claude
+PROMPT_BAO_CAO.txt
+UC_Spec_BookStore_v2.docx

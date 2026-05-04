@@ -1,6 +1,6 @@
-const cartModel = require('../models/cartModel');
+const cartModel  = require('../models/cartModel');
 const orderModel = require('../models/orderModel');
-const bookModel = require('../models/bookModel');
+const bookModel  = require('../models/bookModel');
 
 const createOrderService = async(userId, shippingAddress) =>{
     try{
@@ -65,12 +65,54 @@ const getMyOrdersService = async (userId) => {
         throw error;
     }
 }
-const updateOrderStatusService = async(orderId,status) =>{
-    try{
-        const result = await orderModel.findByIdAndUpdate(orderId,{status:status},{new:true});
-        return result;
-    }catch(error){
+const updateOrderStatusService = async (orderId, status) => {
+    try {
+        const order = await orderModel.findById(orderId);
+        if (!order) throw new Error('Đơn hàng không tồn tại');
+
+        // Khi hủy/hoàn hàng: cộng lại tồn kho và trừ số đã bán
+        // Chỉ hoàn kho nếu đơn chưa ở trạng thái Đã hủy trước đó
+        if (status === 'Đã hủy' && order.status !== 'Đã hủy') {
+            for (const item of order.orderItems) {
+                await bookModel.findByIdAndUpdate(
+                    item.product,
+                    { $inc: { quantity: item.qty, sold: -item.qty } }
+                );
+            }
+        }
+
+        order.status = status;
+        await order.save();
+        return order;
+    } catch (error) {
         throw error;
     }
 }
-module.exports = {createOrderService, getAllOrdersService, getMyOrdersService,updateOrderStatusService};
+const cancelOrderByUserService = async (orderId, userId) => {
+    try {
+        const order = await orderModel.findById(orderId);
+        if (!order) throw new Error('Đơn hàng không tồn tại');
+        if (order.user.toString() !== userId.toString()) throw new Error('Bạn không có quyền hủy đơn hàng này');
+
+        const cancellableStatuses = ['Chờ xác nhận', 'Đang đóng gói'];
+        if (!cancellableStatuses.includes(order.status)) {
+            throw new Error('Không thể hủy đơn hàng đang ở trạng thái "' + order.status + '"');
+        }
+
+        // Hoàn lại tồn kho
+        for (const item of order.orderItems) {
+            await bookModel.findByIdAndUpdate(
+                item.product,
+                { $inc: { quantity: item.qty, sold: -item.qty } }
+            );
+        }
+
+        order.status = 'Đã hủy';
+        await order.save();
+        return order;
+    } catch (error) {
+        throw error;
+    }
+}
+
+module.exports = {createOrderService, getAllOrdersService, getMyOrdersService, updateOrderStatusService, cancelOrderByUserService};

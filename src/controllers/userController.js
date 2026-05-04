@@ -1,5 +1,6 @@
-const {getAllUsersService, getUserServiceById,putUserUpdateService,deleteUserService} = require('../services/userService')
+const {getAllUsersService, getUserServiceById,putUserUpdateService,deleteUserService,restoreUserService} = require('../services/userService')
 const {uploadSingleFile} = require('../services/fileService')
+const bcrypt = require('bcryptjs')
 const getAllUserController = async(req,res)=>{
     try{
         const Users = await getAllUsersService(req.query);
@@ -48,7 +49,7 @@ const getUserById = async(req,res)=>{
 const PutUpdateUser = async(req, res) =>{
     try {
         const id = req.params.id;
-        const {name, phone, address, role} = req.body;
+        const {name, phone, address, role, password} = req.body;
         if (!id) {
                 return res.status(400).json({ message: 'Thiếu User ID' });
             }
@@ -57,7 +58,11 @@ const PutUpdateUser = async(req, res) =>{
                 phone: phone,
                 address:address,
                 role: role
-        }; 
+        };
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            userUpdate.password = await bcrypt.hash(password, salt);
+        }
         if (req.files && req.files.image) {
                 const fileImage = Array.isArray(req.files.image) ? req.files.image[0] : req.files.image;
                 let result = await uploadSingleFile(fileImage, 'user');
@@ -69,7 +74,7 @@ const PutUpdateUser = async(req, res) =>{
                     });        
                 }
         }
-        const updatedUser = await putUserUpdateService(id, dataUpdate);
+        const updatedUser = await putUserUpdateService(id, userUpdate);
 
         if (!updatedUser) {
             return res.status(404).json({ message: 'Người dùng không tồn tại' });
@@ -77,11 +82,11 @@ const PutUpdateUser = async(req, res) =>{
 
         return res.status(200).json({
             message: 'Cập nhật thành công',
-            data: updatedUser 
-        }); 
+            data: updatedUser
+        });
     }catch(error){
-        return res.status(500).json({
-            message: 'Lỗi Server' + error.message
+        return res.status(error.status || 500).json({
+            message: error.message
         });
     }
 }
@@ -105,4 +110,25 @@ const deleteUser = async(req,res) =>{
         });
     }
 }
-module.exports = {getAllUserController, getUserById,PutUpdateUser,deleteUser};
+const restoreUser = async(req, res) => {
+    try{
+        const userId = req.params.id;
+        if(!userId){
+            return res.status(400).json({message: 'Hãy truyền Id'})
+        }
+        const result = await restoreUserService(userId);
+        if(result.modifiedCount === 0) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại hoặc chưa bị khóa' })
+        }
+        return res.status(200).json({
+            message: 'Mở khóa tài khoản thành công',
+            data: result
+        })
+    }catch(error){
+        return res.status(500).json({
+            message: 'Lỗi Server' + error.message
+        });
+    }
+}
+
+module.exports = {getAllUserController, getUserById, PutUpdateUser, deleteUser, restoreUser};
