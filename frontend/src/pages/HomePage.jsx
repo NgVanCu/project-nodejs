@@ -211,24 +211,6 @@ export default function HomePage() {
           </div>
         </section>
       )}
-
-      {/* CTA Banner */}
-      <section className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-2">Đăng ký nhận ưu đãi</h2>
-          <p className="opacity-90 mb-6">Nhận ngay voucher 20K cho đơn hàng đầu tiên và cập nhật sách mới nhất</p>
-          <div className="flex max-w-md mx-auto gap-2">
-            <input
-              type="email"
-              placeholder="Nhập email của bạn..."
-              className="flex-1 px-4 py-3 rounded-xl text-gray-800 text-sm focus:outline-none"
-            />
-            <button className="bg-white text-orange-500 font-bold px-5 py-3 rounded-xl hover:shadow-lg transition-shadow whitespace-nowrap">
-              Đăng ký
-            </button>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }
